@@ -3,24 +3,38 @@ import axios from 'axios';
 import { Button, Dialog, DialogContent, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 const Attenddance = () => {
 
-    const [attdata, setAttData] = useState([
-        { name: '1', namenumber: '478', starttime: '2023-03-01T08:00', endtime: '2023-03-01T17:00', holiday: '' },
-        { name: '2', namenumber: '235', starttime: '2023-04-01T08:00', endtime: '2023-04-01T17:00', holiday: '病假' },
-        { name: '3', namenumber: '489', starttime: '2023-03-15T08:00', endtime: '2023-03-15T17:00', holiday: '事假' },
-    ]);
+    const [attdata, setAttData] = useState([]);
+
+
+
+    //get 資料
+    useEffect(() => {
+        axios.get('http://127.0.0.1:3702/attdance')
+            .then(response => {
+                setAttData(response.data)
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }, []);
+
+
+
 
     const [filter, setFilter] = useState({
-        name: '',
+        EmployeeName: '',
         starttime: '',
         holiday: ''
     });
 
     const filteredAtt = attdata.filter((att) => {
-        const { name, starttime, holiday } = filter;
+        const { EmployeeName, starttime, holiday } = filter;
+        const attEmployeeName = att.EmployeeName ? att.EmployeeName.toLowerCase() : '';
+        const attHoliday = att.holiday ? att.holiday.toLowerCase() : '';
         return (
-            att.name.toLowerCase().includes(name.toLowerCase()) &&
+            attEmployeeName.includes(EmployeeName.toLowerCase()) &&
             att.starttime.includes(starttime) &&
-            att.holiday.toLowerCase().includes(holiday.toLowerCase())
+            attHoliday.includes(holiday.toLowerCase())
         )
     })
 
@@ -45,23 +59,13 @@ const Attenddance = () => {
         // 在這裡將修改後的數據保存到資料庫
         // 然後更新狀態以刷新表格
         const updatedRows = attdata.map(row =>
-            row.name === chattdata.name ? chattdata : row
+            row.id === chattdata.id ? chattdata : row
         );
         setAttData(updatedRows);
         setclickOpen(false);
     };
 
-    //get 資料
-    useEffect(() => {
-        axios.get('http://127.0.0.1:3702/attdance')
-          .then(response => {
-            setAttData(response.data)
-            console.log(response.data);
-          })
-          .catch(error => {
-            console.error(error);
-          });
-      }, []);
+
 
 
     return (
@@ -71,7 +75,7 @@ const Attenddance = () => {
                     <TextField sx={{ width: '100%', m: 1 }}
                         name="Employee Name"
                         label="員工姓名"
-                        value={filter.name}
+                        value={filter.EmployeeName}
                         onChange={handleChange}
                     />
                     <TextField sx={{ width: '100%', m: 1 }}
@@ -103,12 +107,12 @@ const Attenddance = () => {
                 </TableHead>
                 <TableBody>
                     {filteredAtt.map((att) => (
-                        <TableRow key={att.name} onClick={() => handleClick(att)}>
-                            <TableCell name={'Employee Name'}>{att.namenumber}</TableCell>
-                            <TableCell name={'Employee Name'}>{att.name}</TableCell>
-                            <TableCell name={'starttime'}>{att.starttime}</TableCell>
-                            <TableCell name={'endtime'}>{att.endtime}</TableCell>
-                            <TableCell name={'holiday'}>{att.holiday}</TableCell>
+                        <TableRow key={att.id} >
+                            <TableCell >{att.EmployeeId}</TableCell>
+                            <TableCell >{att.EmployeeName}</TableCell>
+                            <TableCell >{att.starttime}</TableCell>
+                            <TableCell >{att.endtime}</TableCell>
+                            <TableCell >{att.holiday}</TableCell>
                             <TableCell>
                                 <Button variant="contained" color="primary" onClick={() => handleClick(att)}>
                                     修改
@@ -125,7 +129,7 @@ const Attenddance = () => {
                     <DialogContent>
                         <TextField
                             label="員工姓名"
-                            value={chattdata.name}
+                            value={chattdata.EmployeeName}
                             fullWidth
                             disabled
                         />
@@ -141,7 +145,7 @@ const Attenddance = () => {
                                     starttime: event.target.value,
                                 })
                             }
-                            
+
                         />
                         <TextField
                             label="結束日期"
@@ -154,11 +158,12 @@ const Attenddance = () => {
                                     endtime: event.target.value,
                                 })
                             }
-                            
+
                         />
                         <TextField
                             label="假別"
-                            value={chattdata.holiday}
+                            //value為null的話，會導致React無法正確管理元件的狀態
+                            value={chattdata.holiday!== null ? chattdata.holiday : ''}
                             fullWidth
                             onChange={(event) =>
                                 setChattData({

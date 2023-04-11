@@ -54,7 +54,7 @@ connection.connect(function(error){
 })
 
 app.get("/attdance",function(req, res){
-    connection.query('select * from att', function(error, data){
+    connection.query("select id,EmployeeName,EmployeeId,DATE_FORMAT(starttime, '%Y-%m-%d %H:%i') as starttime,DATE_FORMAT(endtime, '%Y-%m-%d %H:%i') as endtime,holiday from att", function(error, data){
         res.send(JSON.stringify(data))
         console.log(data)
     })
