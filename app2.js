@@ -1,7 +1,8 @@
 // 以 Express 建立 Web 伺服器
 var express = require("express");
+var cors = require('cors');
 var app = express();
-
+app.use(cors());
 // 以 body-parser 模組協助 Express 解析表單與JSON資料
 var bodyParser = require('body-parser');
 app.use( bodyParser.json() );
@@ -18,10 +19,11 @@ app.use(session({
     saveUninitialized: true
 }));
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    next();
-  });
+// app.use((req, res, next) => {
+//     req.header('Access-Control-Allow-Origin', '*');
+//     res.header('Access-Control-Allow-Origin', '*');
+//     next();
+//   });
 
 // 指定 esj 為 Express 的畫面處理引擎
 app.set('view engine', 'ejs');
@@ -36,6 +38,7 @@ console.log("「Ctrl + C」可結束伺服器程式.");
 
 
 var mysql = require('mysql');
+const { Update } = require("@mui/icons-material");
 var connection = mysql.createConnection({
     host:'127.0.0.1',
     user:'root',
@@ -58,4 +61,12 @@ app.get("/attdance",function(req, res){
         res.send(JSON.stringify(data))
         console.log(data)
     })
+})
+
+app.put("/attdance", function(req, res){
+    connection.query(
+        "update att set starttime = ? , endtime = ? , holiday = ? where id ="+req.body.id,
+        [req.body.starttime, req.body.endtime, req.body.holiday]
+    ) ;
+    res.send("Update Finish");
 })

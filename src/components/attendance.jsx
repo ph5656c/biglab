@@ -56,8 +56,17 @@ const Attenddance = () => {
         setclickOpen(false);
     }
 
-    const handleSaveClick = () => {
+    const handleSaveClick = (newData) => {
         // 在這裡將修改後的數據保存到資料庫
+        
+        axios.put(`http://127.0.0.1:3702/attdance/`, newData)
+            .then(response => {
+                console.log(response);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
         // 然後更新狀態以刷新表格
         const updatedRows = attdata.map(row =>
             row.id === chattdata.id ? chattdata : row
@@ -119,7 +128,14 @@ const Attenddance = () => {
                                 hour: '2-digit',
                                 minute: '2-digit',
                             })}</TableCell>
-                            <TableCell >{att.endtime}</TableCell>
+                            <TableCell >{new Date(att.endtime).toLocaleString('zh-TW', {
+                                hour12: false,
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })}</TableCell>
                             <TableCell >{att.holiday}</TableCell>
                             <TableCell>
                                 <Button variant="contained" color="primary" onClick={() => handleClick(att)}>
@@ -180,7 +196,7 @@ const Attenddance = () => {
                                 })
                             }
                         />
-                        <Button variant="contained" onClick={handleSaveClick}>
+                        <Button variant="contained" onClick={() =>handleSaveClick(chattdata)}>
                             儲存
                         </Button>
                     </DialogContent>
