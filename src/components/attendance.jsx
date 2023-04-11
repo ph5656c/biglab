@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Dialog, DialogContent, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import InputProps from '@mui/material';
 const Attenddance = () => {
 
     const [attdata, setAttData] = useState([]);
@@ -110,7 +111,14 @@ const Attenddance = () => {
                         <TableRow key={att.id} >
                             <TableCell >{att.EmployeeId}</TableCell>
                             <TableCell >{att.EmployeeName}</TableCell>
-                            <TableCell >{att.starttime}</TableCell>
+                            <TableCell >{new Date(att.starttime).toLocaleString('zh-TW', {
+                                hour12: false,
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })}</TableCell>
                             <TableCell >{att.endtime}</TableCell>
                             <TableCell >{att.holiday}</TableCell>
                             <TableCell>
@@ -163,7 +171,7 @@ const Attenddance = () => {
                         <TextField
                             label="假別"
                             //value為null的話，會導致React無法正確管理元件的狀態
-                            value={chattdata.holiday!== null ? chattdata.holiday : ''}
+                            value={chattdata.holiday !== null ? chattdata.holiday : ''}
                             fullWidth
                             onChange={(event) =>
                                 setChattData({
