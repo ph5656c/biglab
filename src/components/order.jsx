@@ -9,6 +9,7 @@ import Neworder from './neworder';
 import TextField from '@mui/material/TextField';
 import Testtable from './testtable';
 import Button from '@mui/material/Button';
+import Neworder2 from './neworder2.jsx';
 class Order extends Component {
     state = {}
     render() {
@@ -30,6 +31,7 @@ class Order extends Component {
                         </Grid>
                         <Grid xs={12}>
                             <Neworder />
+                            <Neworder2 />
                         </Grid>
                         <Grid xs={12}>
                             <Ordertable />

@@ -43,7 +43,7 @@ var connection = mysql.createConnection({
     host:'127.0.0.1',
     user:'root',
     password:'',
-    post:'3306',
+    port:'3306',
     database:'biglab'
 
 })
@@ -70,3 +70,24 @@ app.put("/attdance", function(req, res){
     ) ;
     res.send("Update Finish");
 })
+
+app.get("/coustomer" , function(req, res){
+    connection.query("select * from customers", function(error, data){
+        res.send(JSON.stringify(data))
+    })
+})
+
+app.put("/coustomer", function(req, res){
+    connection.query(
+        "update customers set customerphone = ? , customeremail = ? , customeraddress = ? ,customerfax = ? where customerid ="+req.body.customerid,
+        [req.body.customerphone, req.body.customeremail, req.body.customeraddress, req.body.customerfax]
+    ) ;
+    res.send("Update Finish");
+})
+
+app.post("/coustomer/create", function(req, res){
+    connection.query("insert into customers set customername = ?, customerphone = ? , customeremail = ?, customeraddress = ?, customerfax = ?",
+    [req.body.customername, req.body.customerphone, req.body.customeremail, req.body.customeraddress, req.body.customerfax]);
+    res.send("新增成功")
+})
+
