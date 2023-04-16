@@ -1,115 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, FormControl, Grid,
+    Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, Autocomplete, Grid,
     Table, TableBody, TableCell, TableHead, TableRow,
 } from '@mui/material';
-import { Formik, Form, Field, FieldArray } from 'formik';
+import { Formik, Form, FieldArray } from 'formik';
 import * as Yup from 'yup';
+import axios from 'axios';
+
+
 const initialValues = {
     ordernumber: '',
     createdate: '',
-    modifieddate: '',
     deliverydate: '',
     customername: '',
-    customerphone: '',
-    customeraddress: '',
-    customeremail: '',
     products: [{ productname: '', spec: '', quty: '', price: '' }],
 };
-//編輯表單
-function EditableTableCell({ value, onChange }) {
-    return (
-        <TableCell>
-            <TextField
-                fullWidth
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-            />
-        </TableCell>
-    );
-}
-//增加一列
-function AddTableRow({ onAdd }) {
-    // const [productname, setProductname] = useState('');
-    // const [spec, setSpec] = useState('');
-    // const [quty, setQuty] = useState('');
-    // const [price, setPrice] = useState('');
 
 
-    // const handleAdd = () => {
-    //     onAdd({ productname, spec, quty, price });
-    //     setProductname('');
-    //     setSpec('');
-    //     setQuty('');
-    //     setPrice('');
-    // };
-
-    return (
-        <FieldArray name="products">
-            {({ push }) => (
-                <Button onClick={() => push({ productname: '', spec: '', quty: '', price: '' })} color="primary">
-                    新增
-                </Button>)}
-        </FieldArray>
-    );
-}
+const validationSchema = Yup.object().shape({
+    ordernumber: Yup.string().required('必填'),
+    createdate: Yup.date().max(new Date(), '日期不能晚於今天').required('請輸入建立日期'),
+    deliverydate: Yup.date().min(new Date(), '交貨日期必須晚於今天').required('請輸入交貨日期'),
+    customername: Yup.string().required('必填'),
+    products: Yup.array().of(
+        Yup.object().shape({
+            productname: Yup.string(),
+            spec: Yup.string(),
+            quty: Yup.number().typeError('必須為數字').min(1, '數量不能為0或負數'),
+            price: Yup.number().typeError('必須為數字'),
+        }),
+    ),
+});
 
 
 
 export default function NewOrder() {
     const [open, setopen] = useState(false);
 
-    // const [formData, setformData] = useState({
-    //     ordernumber: '',
-    //     createdate: '',
-    //     modifieddate: '',
-    //     deliverydate: '',
-    //     customername: '',
-    //     customerphone: '',
-    //     customeraddress: '',
-    //     customeremail: '',
-    // })
+    //客戶名稱
+    const [customer, setCustomer] = useState([]);
+
+    //抓客戶名稱資料
+    useEffect(() => {
+        axios.get('http://127.0.0.1:3702/coustomername')
+            .then(response => {
+                setCustomer(response.data)
+                console.log(response.data)
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }, [])
+
+    // const chcustomer = JSON.parse(customer);
 
     const handleClickOpen = () => {
         setopen(true);
     };
 
     const handleClose = () => {
-        // setformData({});
-        settableData([{ productname: '', spec: '', quty: '', price: '' }]);
         setopen(false);
     };
-    //form 資料
-    // const handleInputChange = (event) => {
-    //     const { name, value } = event.target;
-    //     setformData({ ...formData, [name]: value })
-    // }
-
-    //table 
-    const [tableData, settableData] = useState(initialValues.products);
-
-
-
-    const handleCellChange = (productname, field, value) => {
-        settableData((prevData) =>
-            prevData.map((row) =>
-                row.productname === productname ? { ...row, [field]: value } : row
-            )
-        );
-    };
-
-
-
-    const handleAddRow = () => {
-        settableData([...tableData, { productname: '', spec: '', quty: '', price: '' }]);
-    };
-
 
     //onClick sumbit 發送資料
-    const handleSubmit = (values) => {
+    const handleSubmit = (values, { setSubmitting }, { resetForm }) => {
         // TODO: 使用axios将formData发送到后端API
+        setSubmitting(false);
         console.log(values);
-        settableData([]);
+        resetForm();
         handleClose();
     };
 
@@ -118,101 +76,104 @@ export default function NewOrder() {
 
 
 
-    const validationSchema = Yup.object().shape({
-        ordernumber: Yup.string().required('必填'),
-        createdate: Yup.string().required('必填'),
-        deliverydate: Yup.string().required('必填'),
-        customername: Yup.string().required('必填'),
-        products: Yup.array().of(
-            Yup.object().shape({
-                productname: Yup.string().required('必填'),
-                spec: Yup.string().required('必填'),
-                quty: Yup.number().required('必填'),
-                price: Yup.number().required('必填'),
-            }),
-        ),
-    });
+
 
     return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'right' }}>
+        <Box>
+            <Box style={{ display: 'flex', justifyContent: 'right' }}>
                 <Button variant="contained" color="primary" onClick={handleClickOpen}>
                     新增訂單
                 </Button>
-            </div>
-            <Box component="form">
-                <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
-                    {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
-                        <Form onSubmit={handleSubmit}>
-                            <Dialog open={open}
-                                onClose={handleClose}
-                                sx={{ '& .MuiTextField-root': { m: 1, mt: 2 }, }}
-                                maxWidth='lg'
-                            >
-                                <DialogTitle>新增/修改訂單</DialogTitle>
-                                <DialogContent>
-                                    <Box onSubmit={handleSubmit} >
-                                        <FormControl fullWidth>
-                                            <Grid container spacing={2}>
-                                                <Grid xs display="flex" justifyContent="center" alignItems="center">
+            </Box>
+            <Dialog open={open}
+                onClose={handleClose}
+                sx={{ '& .MuiTextField-root': { m: 1, mt: 2 }, }}
+                maxWidth='lg'
+            >
+                <DialogTitle>新增/修改訂單</DialogTitle>
+                <DialogContent>
+                    <Formik initialValues={initialValues}
+                        validationSchema={validationSchema}
+                        onSubmit={(values, { setSubmitting, resetForm }) => {
+                            // TODO: 使用axios将formData发送到后端API
+                            console.log(values);
+                            setSubmitting(false);
+                            resetForm();
+                            handleClose();
+                        }}>
+                        {({ values, errors, touched, setFieldValue, handleChange, handleBlur, handleSubmit }) => (
+                            <Box component={Form} onSubmit={handleSubmit} >
+                                <Grid container spacing={2}>
+                                    <Grid item xs display="flex" justifyContent="center" alignItems="center">
+                                        <TextField
+                                            label="訂單編號:"
+                                            name="ordernumber"
+                                            fullWidth
+                                            value={values.ordernumber}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.ordernumber && Boolean(errors.ordernumber)}
+                                            helperText={touched.ordernumber && errors.ordernumber}
+                                        />
+                                    </Grid>
+                                    <Grid item xs display="flex" justifyContent="center" alignItems="center">
+                                        <TextField
+                                            label="建單日期:"
+                                            name="createdate"
+                                            type="date"
+                                            fullWidth
+                                            InputLabelProps={{ shrink: true }}
+                                            value={values.createdate}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.createdate && Boolean(errors.createdate)}
+                                            helperText={touched.createdate && errors.createdate}
+                                        />
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={2}>
+                                    <Grid item xs display="flex" justifyContent="start" alignItems="center">
+                                        <Autocomplete
+                                        sx={{width:'379px'}}
+                                            options={customer}
+                                            getOptionLabel={(option) => option.customername}
+                                            filterOptions={(options, { inputValue }) =>
+                                                options.filter((option) =>
+                                                    option.customername.toLowerCase().includes(inputValue.toLowerCase())
+                                                )
+                                            }
+                                            onChange={(event, value) => setFieldValue("customername", value?.customername || "")}
+                                            value={customer.find((c) => c.customername === values.customername) || null}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="客戶名稱"
+                                                    name="customername"
+                                                    onBlur={handleBlur}
+                                                    error={touched.customername && Boolean(errors.customername)}
+                                                    helperText={touched.customername && errors.customername}
+                                                />
+                                            )}
+                                        />
+                                    </Grid>
+                                    <Grid item xs display="flex" justifyContent="center" alignItems="center">
+                                        <TextField
+                                            label="交貨日期:"
+                                            name="deliverydate"
+                                            type="date"
+                                            fullWidth
+                                            InputLabelProps={{ shrink: true }}
+                                            value={values.deliverydate}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.deliverydate && Boolean(errors.deliverydate)}
+                                            helperText={touched.deliverydate && errors.deliverydate}
+                                        />
+                                    </Grid>
+                                </Grid>
 
-                                                    <TextField
-                                                        label="訂單編號:"
-                                                        name="ordernumber"
-                                                        fullWidth
-                                                        value={values.ordernumber}
-                                                        onChange={handleChange}
-                                                        onBlur={handleBlur}
-                                                        error={touched.ordernumber && Boolean(errors.ordernumber)}
-                                                        helperText={touched.ordernumber && errors.ordernumber}
-                                                    />
-                                                </Grid>
-                                                <Grid xs display="flex" justifyContent="center" alignItems="center">
-                                                    <TextField
-                                                        label="建單日期:"
-                                                        name="createdate"
-                                                        type="date"
-                                                        fullWidth
-                                                        InputLabelProps={{ shrink: true }}
-                                                        value={values.createdate}
-                                                        onChange={handleChange}
-                                                        onBlur={handleBlur}
-                                                        error={touched.createdate && Boolean(errors.createdate)}
-                                                        helperText={touched.createdate && errors.createdate}
-                                                    />
-                                                </Grid>
-                                            </Grid>
-                                        </FormControl>
-                                        <FormControl fullWidth>
-                                            <Grid container spacing={2}>
-                                                <Grid xs display="flex" justifyContent="center" alignItems="center">
-                                                    <TextField
-                                                        label="客戶名稱:"
-                                                        name="customername"
-                                                        fullWidth
-                                                        value={values.customername}
-                                                        onChange={handleChange}
-                                                        onBlur={handleBlur}
-                                                        error={touched.customername && Boolean(errors.customername)}
-                                                        helperText={touched.customername && errors.customername}
-                                                    />
-                                                </Grid>
-                                                <Grid xs display="flex" justifyContent="center" alignItems="center">
-                                                    <TextField
-                                                        label="交貨日期:"
-                                                        name="deliverydate"
-                                                        type="date"
-                                                        fullWidth
-                                                        InputLabelProps={{ shrink: true }}
-                                                        value={values.deliverydate}
-                                                        onChange={handleChange}
-                                                        onBlur={handleBlur}
-                                                        error={touched.customername && Boolean(errors.customername)}
-                                                        helperText={touched.customername && errors.customername}
-                                                    />
-                                                </Grid>
-                                            </Grid>
-                                        </FormControl>
+                                <FieldArray name="products">
+                                    {({ push, remove }) => (
                                         <Table>
                                             <TableHead>
                                                 <TableRow>
@@ -223,55 +184,79 @@ export default function NewOrder() {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {tableData.map((row) => (
-                                                    <TableRow key={row.productname}>
+                                                {values.products.map((row, index) => (
+                                                    <TableRow key={index}>
                                                         <TableCell>
                                                             <TextField
-                                                                name="productname"
+                                                                name={`'productname'${index}`}
                                                                 value={row.productname}
-                                                                onChange={(value) => handleCellChange(row.productitems, 'productname', value)}
-                                                                error={touched.productname && !!errors.productname}
-                                                                helperText={touched.productname && errors.productname}
+                                                                onChange={(e) => {
+                                                                    const { value } = e.target;
+                                                                    setFieldValue(`products.${index}.productname`, value);
+                                                                }}
+                                                                error={Boolean(errors.products?.[index]?.productname)}
+                                                                helperText={errors.products?.[index]?.productname}
                                                             />
                                                         </TableCell>
-                                                        {/* <EditableTableCell
-                                                            value={row.productname}
-                                                            onChange={handleChange}
-                                                        />
-                                                        <EditableTableCell
-                                                            value={row.spec}
-                                                            onChange={handleChange}
-                                                        />
-                                                        <EditableTableCell
-                                                            value={row.quty}
-                                                            onChange={handleChange}
-                                                        />
-                                                        <EditableTableCell
-                                                            value={row.price}
-                                                            onChange={handleChange}
-                                                        /> */}
+                                                        <TableCell>
+                                                            <TextField
+                                                                name={`'spec'${index}`}
+                                                                value={row.spec}
+                                                                onChange={(e) => {
+                                                                    const { value } = e.target;
+                                                                    setFieldValue(`products.${index}.spec`, value);
+                                                                }}
+                                                                error={Boolean(errors.products?.[index]?.spec)}
+                                                                helperText={errors.products?.[index]?.spec}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                name={`'quty'${index}`}
+                                                                value={row.quty}
+                                                                onChange={(e) => {
+                                                                    const { value } = e.target;
+                                                                    setFieldValue(`products.${index}.quty`, value);
+                                                                }}
+                                                                error={Boolean(errors.products?.[index]?.quty)}
+                                                                helperText={errors.products?.[index]?.quty}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                name={`'price'${index}`}
+                                                                value={row.price}
+                                                                onChange={(e) => {
+                                                                    const { value } = e.target;
+                                                                    setFieldValue(`products.${index}.price`, value);
+                                                                }}
+                                                                error={Boolean(errors.products?.[index]?.price)}
+                                                                helperText={errors.products?.[index]?.price}
+                                                            />
+                                                        </TableCell>
                                                     </TableRow>
                                                 ))}
                                                 <TableRow>
                                                     <TableCell colSpan={5}>
-                                                        <Button onClick={handleAddRow} color="primary">
+                                                        <Button type="button" onClick={() => push({ productname: '', spec: '', quty: '', price: '' })} color="primary">
                                                             新增
                                                         </Button>
                                                     </TableCell>
                                                 </TableRow>
                                             </TableBody>
                                         </Table>
-                                    </Box>
-                                </DialogContent>
+                                    )}
+                                </FieldArray>
+
                                 <DialogActions>
                                     <Button onClick={handleClose} color="primary">取消</Button>
-                                    <Button onClick={handleSubmit} color="primary">儲存</Button>
+                                    <Button type="submit" color="primary">儲存</Button>
                                 </DialogActions>
-                            </Dialog>
-                        </Form>
-                    )}
-                </Formik>
-            </Box>
-        </div >
+                            </Box>
+                        )}
+                    </Formik>
+                </DialogContent>
+            </Dialog>
+        </Box >
     )
 }

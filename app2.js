@@ -91,3 +91,9 @@ app.post("/coustomer/create", function(req, res){
     res.send("新增成功")
 })
 
+app.get("/coustomername" , function(req, res){
+    connection.query("select customername from customers", function(error, data){
+        res.send(JSON.stringify(data))
+    })
+})
+
