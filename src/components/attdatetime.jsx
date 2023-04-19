@@ -19,7 +19,8 @@ function Attdatetime() {
     },
     {
         title: '打卡',
-        start: '2023-03-28T17:10:20',
+        start: '2023-03-28T08:10:20',
+        end: '2023-03-28T17:10:20',
         allDay: false,
     },
     {
@@ -39,20 +40,58 @@ function Attdatetime() {
         }, 1000);
     }, []);
 
-    const handleDateSelect = () => {
+    // const handleUpDateSelect = () => {
+    //     const date = new Date();
+    //     const title = '上班';
+    //     const eventData = {
+    //         title,
+    //         start: date.toISOString(),
+    //         allDay: false,
+    //     };
+    //     setEvents([...events, eventData]);
+    //     console.log(events);
+    //     // 將 eventData 回傳資料庫
+    // };
+
+    // const handleDownDateSelect = () => {
+    //     const date = new Date();
+    //     const title = '下班';
+    //     const eventData = {
+    //         title,
+    //         start: false,
+    //         end:date.toISOString(),
+    //         allDay: false,
+    //     };
+    //     setEvents([...events, eventData]);
+    //     console.log(events);
+    //     // 將 eventData 回傳資料庫
+    // };
+
+
+    const handleDateSelect = (type) => {
         const date = new Date();
-        const title = '打卡';
+        const title = type === 'up' ? '上班' : '下班';
+        const start = date.toISOString();
+        const end = type === 'down' ? date.toISOString() : null;
         const eventData = {
             title,
-            start: date.toISOString(),
-            allDay: false,
-        };
+            start,
+            end,
+            allday: false,
+        }
         setEvents([...events, eventData]);
-        console.log(events);
-        // 將 eventData 回傳資料庫
-    };
 
-
+        const lastEvent = events[events.length - 1];
+        const upEvent = lastEvent.title === '上班' ? lastEvent: events.find((event) => event.title === '上班');
+        const downEvent = lastEvent.title === '下班' ? lastEvent :events.find((event) => event.title === '下班');
+        const data = {
+            category: '上下班',
+            start_time: upEvent.start,
+            end_time: downEvent ? downEvent.end : null,
+          };
+        console.log(data);
+    }
+    
     return (
         <div>
             <div style={{ width: '100%', height: '100%', 'text-align': 'center' }}>
@@ -61,9 +100,14 @@ function Attdatetime() {
                     <span>{month}月</span>
                     <span>{day}日</span><br />
                     <span >{time}</span>
-                    <button type="submit" onClick={handleDateSelect}
-                        style={{ 'font-size': '25px', color: '#fff', 'font-weight': 700, margin: '10px', 'background-color': 'orange' }}
-                    >打卡</button>
+                    <div>
+                        <button type="submit" onClick={() => handleDateSelect('up')}
+                            style={{ 'font-size': '25px', color: '#fff', 'font-weight': 700, margin: '10px', 'background-color': 'orange' }}
+                        >上班</button>
+                        <button type="submit" onClick={() => handleDateSelect('down')}
+                            style={{ 'font-size': '25px', color: '#fff', 'font-weight': 700, margin: '10px', 'background-color': 'orange' }}
+                        >下班</button>
+                    </div>
                 </div>
             </div>
 

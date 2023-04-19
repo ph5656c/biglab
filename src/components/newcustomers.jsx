@@ -46,23 +46,21 @@ export default function NewCustomers({ handleAdd }) {
                         }}
                         validationSchema={Yup.object({
                             customername: Yup.string().required('必填'),
-                            customerphone: Yup.string().max(15.).required('必填'),
+                            customerphone: Yup.string().max(15).required('必填'),
                             customeremail: Yup.string().email('請輸入正確的電子郵件格式'),
                             customeraddress: Yup.string().required('必填'),
                             customerfax: Yup.string().max(15)
                         })}
-                        onSubmit={(values, { setSubmitting }) => {
-                            // axios.post('http://127.0.0.1:3702/coustomer/create', values)
-                            //     .then((response) => {
-                            //         console.log(response.data);
-                            //     })
-                            //     .catch((error) => {
-                            //         console.log(error);
-                            //     });
-                            console.log(values);
-                            setSubmitting(false);
-                            const newCustomer = { ...values };
-                            handleAdd(newCustomer);
+                        onSubmit={(values) => {
+                            axios.post('http://127.0.0.1:3702/coustomer/create', values)
+                                .then((response) => {
+                                    console.log(response.data);
+                                })
+                                .catch((error) => {
+                                    console.log(error);
+                                });
+                            
+                            handleAdd();
                             handleClose();
                         }}
                     >
@@ -136,6 +134,7 @@ export default function NewCustomers({ handleAdd }) {
                                     </Grid>
                                 </Grid>
                                 <DialogActions>
+                                    <Button onClick={handleClose} color="primary">取消</Button>
                                     <Button type="submit">儲存</Button>
                                 </DialogActions>
                             </Box>

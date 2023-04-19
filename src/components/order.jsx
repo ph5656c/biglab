@@ -1,14 +1,8 @@
 import React, { Component } from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 import Container from '@mui/material/Container';
-import { styled } from '@mui/material/styles';
-import Table from './table.jsx';
 import Ordertable from './ordertable.jsx';
 import Pie from './pie';
-import Neworder from './neworder';
-import TextField from '@mui/material/TextField';
-import Testtable from './testtable';
-import Button from '@mui/material/Button';
 import Neworder2 from './neworder2.jsx';
 class Order extends Component {
     state = {}
@@ -30,7 +24,6 @@ class Order extends Component {
                             <Pie />
                         </Grid>
                         <Grid xs={12}>
-                            <Neworder />
                             <Neworder2 />
                         </Grid>
                         <Grid xs={12}>

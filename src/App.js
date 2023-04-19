@@ -12,11 +12,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/I" Component={Inventor} />
+        <Route path="/I" Component={Inventor} />v
         <Route path="/" Component={Order} />
         <Route path="/A" Component={Attendance} />
-        <Route path="/A2" Component={Attdatetime} />
-        <Route path="/N" Component={Newcustomers} />
+        <Route path="/A2" Component={Attdatetime} />v
+        <Route path="/N" Component={Newcustomers} />v
         
       </Routes>
     </Router>

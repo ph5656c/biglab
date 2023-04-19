@@ -58,20 +58,18 @@ const Newcust = () => {
         setOpen(false);
     }
 
-    const handleAdd = (newCustomer) =>{
-        setCustomers([...customers, newCustomer]);
+    const handleAdd = async() =>{
+        await axios.get('http://127.0.0.1:3702/coustomer')
+            .then(response => {
+                setCustomers(response.data)
+            })
+            .catch(error => {
+                console.error(error);
+            });
     }
 
     //手風琴
     const [collopen, setCollopen] = useState([]);
-
-    const handleCollopen = () => {
-        setCollopen(true);
-    }
-
-    const handleCollclose = () => {
-        setCollopen(!collopen);
-    }
 
     const handleCollClick = (rowId) => {
         if (collopen.includes(rowId)) {

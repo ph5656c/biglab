@@ -9,25 +9,24 @@ import axios from 'axios';
 
 
 const initialValues = {
-    ordernumber: '',
-    createdate: '',
+    orderid: '',
+    orderdate: '',
     deliverydate: '',
     customername: '',
-    products: [{ productname: '', spec: '', quty: '', price: '' }],
+    products: [{ productname: '', quty: '', price: '' }],
 };
 
 
 const validationSchema = Yup.object().shape({
-    ordernumber: Yup.string().required('必填'),
-    createdate: Yup.date().max(new Date(), '日期不能晚於今天').required('請輸入建立日期'),
+    orderid: Yup.string().required('必填'),
+    orderdate: Yup.date().max(new Date(), '日期不能晚於今天').required('請輸入建立日期'),
     deliverydate: Yup.date().min(new Date(), '交貨日期必須晚於今天').required('請輸入交貨日期'),
     customername: Yup.string().required('必填'),
     products: Yup.array().of(
         Yup.object().shape({
-            productname: Yup.string(),
-            spec: Yup.string(),
-            quty: Yup.number().typeError('必須為數字').min(1, '數量不能為0或負數'),
-            price: Yup.number().typeError('必須為數字'),
+            productname: Yup.string().required('必填'),
+            quty: Yup.number().typeError('必須為數字').min(1, '數量不能為0或負數').required('必填'),
+            price: Yup.number().typeError('必須為數字').required('必填'),
         }),
     ),
 });
@@ -45,14 +44,11 @@ export default function NewOrder() {
         axios.get('http://127.0.0.1:3702/coustomername')
             .then(response => {
                 setCustomer(response.data)
-                console.log(response.data)
             })
             .catch(error => {
                 console.error(error);
             })
     }, [])
-
-    // const chcustomer = JSON.parse(customer);
 
     const handleClickOpen = () => {
         setopen(true);
@@ -63,13 +59,13 @@ export default function NewOrder() {
     };
 
     //onClick sumbit 發送資料
-    const handleSubmit = (values, { setSubmitting }, { resetForm }) => {
-        // TODO: 使用axios将formData发送到后端API
-        setSubmitting(false);
-        console.log(values);
-        resetForm();
-        handleClose();
-    };
+    // const handleSubmit = (values, { setSubmitting }, { resetForm }) => {
+    //     // TODO: 使用axios将formData发送到后端API
+    //     setSubmitting(false);
+    //     console.log(values);
+    //     resetForm();
+    //     handleClose();
+    // };
 
 
 
@@ -89,13 +85,20 @@ export default function NewOrder() {
                 onClose={handleClose}
                 sx={{ '& .MuiTextField-root': { m: 1, mt: 2 }, }}
                 maxWidth='lg'
+
             >
                 <DialogTitle>新增/修改訂單</DialogTitle>
                 <DialogContent>
                     <Formik initialValues={initialValues}
                         validationSchema={validationSchema}
                         onSubmit={(values, { setSubmitting, resetForm }) => {
-                            // TODO: 使用axios将formData发送到后端API
+                            axios.post('http://127.0.0.1:3702/order/create', values)
+                                .then((response) => {
+                                    console.log(response.data);
+                                })
+                                .catch(error => {
+                                    console.error(error);
+                                });
                             console.log(values);
                             setSubmitting(false);
                             resetForm();
@@ -107,34 +110,34 @@ export default function NewOrder() {
                                     <Grid item xs display="flex" justifyContent="center" alignItems="center">
                                         <TextField
                                             label="訂單編號:"
-                                            name="ordernumber"
+                                            name="orderid"
                                             fullWidth
-                                            value={values.ordernumber}
+                                            value={values.orderid}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.ordernumber && Boolean(errors.ordernumber)}
-                                            helperText={touched.ordernumber && errors.ordernumber}
+                                            error={touched.orderid && Boolean(errors.orderid)}
+                                            helperText={touched.orderid && errors.orderid}
                                         />
                                     </Grid>
                                     <Grid item xs display="flex" justifyContent="center" alignItems="center">
                                         <TextField
                                             label="建單日期:"
-                                            name="createdate"
+                                            name="orderdate"
                                             type="date"
                                             fullWidth
                                             InputLabelProps={{ shrink: true }}
-                                            value={values.createdate}
+                                            value={values.orderdate}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.createdate && Boolean(errors.createdate)}
-                                            helperText={touched.createdate && errors.createdate}
+                                            error={touched.orderdate && Boolean(errors.orderdate)}
+                                            helperText={touched.orderdate && errors.orderdate}
                                         />
                                     </Grid>
                                 </Grid>
                                 <Grid container spacing={2}>
                                     <Grid item xs display="flex" justifyContent="start" alignItems="center">
                                         <Autocomplete
-                                        sx={{width:'379px'}}
+                                            sx={{ width: '243.5px' }}
                                             options={customer}
                                             getOptionLabel={(option) => option.customername}
                                             filterOptions={(options, { inputValue }) =>
@@ -178,7 +181,7 @@ export default function NewOrder() {
                                             <TableHead>
                                                 <TableRow>
                                                     <TableCell align="center">產品品名</TableCell>
-                                                    <TableCell align="center">規格</TableCell>
+                                                    {/* <TableCell align="center">規格</TableCell> */}
                                                     <TableCell align="center" sx={{ width: "100px" }}>數量</TableCell>
                                                     <TableCell align="center" sx={{ width: "100px" }}>單價</TableCell>
                                                 </TableRow>
@@ -196,18 +199,6 @@ export default function NewOrder() {
                                                                 }}
                                                                 error={Boolean(errors.products?.[index]?.productname)}
                                                                 helperText={errors.products?.[index]?.productname}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <TextField
-                                                                name={`'spec'${index}`}
-                                                                value={row.spec}
-                                                                onChange={(e) => {
-                                                                    const { value } = e.target;
-                                                                    setFieldValue(`products.${index}.spec`, value);
-                                                                }}
-                                                                error={Boolean(errors.products?.[index]?.spec)}
-                                                                helperText={errors.products?.[index]?.spec}
                                                             />
                                                         </TableCell>
                                                         <TableCell>
@@ -238,7 +229,7 @@ export default function NewOrder() {
                                                 ))}
                                                 <TableRow>
                                                     <TableCell colSpan={5}>
-                                                        <Button type="button" onClick={() => push({ productname: '', spec: '', quty: '', price: '' })} color="primary">
+                                                        <Button type="button" onClick={() => push({ productname: '', quty: '', price: '' })} color="primary">
                                                             新增
                                                         </Button>
                                                     </TableCell>
