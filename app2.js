@@ -148,8 +148,8 @@ app.post("/order/create", function (req, res) {
                     });
                 }
 
-                const norderid = order.orderid;
-
+                const norderid = result.insertId;
+                
                 // insert data into orderitems table
                 const orderitemData = order.products.map((product) => {
                     return [
@@ -160,7 +160,7 @@ app.post("/order/create", function (req, res) {
                     ];
                 });
 
-                connection.query('INSERT INTO orderitems (orderid, productname, quty, price) VALUES ?', [orderitemData], (err, result) => {
+                connection.query('INSERT INTO orderitems (id, productname, quty, price) VALUES ?', [orderitemData], (err, result) => {
                     if (err) {
                         connection.rollback(() => {
                             throw err;
@@ -185,7 +185,7 @@ app.post("/order/create", function (req, res) {
 
 //取得訂單資料
 app.get("/order", function (req, res) {
-    connection.query("select orders.orderid, orders.orderdate, orders.deliverydate, orders.orderstate, orders.customername, orderitems.productname, orderitems.quty, orderitems.price from orders inner join orderitems on orders.orderid = orderitems.orderid", function (error, data) {
+    connection.query("select o.orderid, o.orderdate, o.deliverydate, o.orderstate, o.changdate, c.customername, oi.productname, oi.quty, oi.price , c.customerphone, c.customeremail, c.customeraddress, c.customerfax from orders o join orderitems oi on o.id = oi.id join customers c on o.customername = c.customername", function (error, data) {
         const formatDate = (dateString) => {
             const date = new Date(dateString);
             const year = date.getFullYear();
@@ -207,8 +207,13 @@ app.get("/order", function (req, res) {
                 orderid: curr.orderid,
                 orderdate: formatDate(curr.orderdate),
                 deliverydate: formatDate(curr.deliverydate),
+                changdate: curr.changdate,
                 orderstate: curr.orderstate,
                 customername: curr.customername,
+                customerphone: curr.customerphone, 
+                customeremail: curr.customeremail, 
+                customeraddress: curr.customeraddress, 
+                customerfax: curr.customerfax,
                 product: [
                   {
                     productname: curr.productname,
@@ -224,6 +229,45 @@ app.get("/order", function (req, res) {
         res.send(JSON.stringify(finalResult))
     })
 })
+
+
+//修改訂單資料
+app.put("/order/edit", function (req, res) {
+    connection.query("update orders set deliverydate = ? ,orderstate = ? ,changdate = ? where orderid = " + req.body.orderid, 
+    [req.body.deliverydate, req.body.orderstate, req.body.changdate])
+    res.send("修改成功")
+})
+
+//訂單產品分布pie
+app.get("/order/productpie" ,function (req ,res) {
+    connection.query("select orderitems.productname, sum(orderitems.quty) as total_sales from orders inner join orderitems on orders.id = orderitems.id where year(orders.orderdate) = 2023 group by orderitems.productname;", function(error, data){
+        const result = data?.map(item => {
+            return {
+              id: item.productname,
+              label: item.productname,
+              value: item.total_sales
+            }
+          });
+        res.json(result)   
+    })
+    
+})
+
+//訂單客戶分布pie
+app.get("/order/customerpie", function(req,res){
+    connection.query("select case when month(orderdate) in (1, 2, 3) then 'Q1' when month(orderdate) in (4, 5, 6) then 'Q2' when month(orderdate) in (7, 8, 9) then 'Q3' when month(orderdate) in (10, 11, 12) then 'Q4' end as quarte, count(distinct orders.id) as order_count from orders join orderitems on orders.id = orderitems.id where year(orderdate) = 2023 group by quarte;"
+    , function (error, data){
+        const result = data?.map(item => {
+            return {
+              id: item.quarte,
+              label: item.quarte,
+              value: item.order_count
+            }
+          });
+        res.json(result)   
+    })
+})
+
 
 
 
@@ -259,3 +303,5 @@ app.put("/products", function (req, res) {
     );
     res.send("Update Finish");
 })
+
+

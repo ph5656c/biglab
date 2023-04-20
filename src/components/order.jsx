@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 import Container from '@mui/material/Container';
 import Ordertable from './ordertable.jsx';
-import Pie from './pie';
+import Pie from './pieproduct';
+import Pie2 from './piecustomer';
 import Neworder2 from './neworder2.jsx';
 class Order extends Component {
     state = {}
@@ -17,7 +18,7 @@ class Order extends Component {
                         </Grid>
                         <Grid xs={6} height="250px">
                             <div>訂單分布</div>
-                            <Pie />
+                            <Pie2 />
                         </Grid>
                         <Grid xs={6} height="250px">
                             <div>產品分布</div>
