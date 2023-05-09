@@ -6,6 +6,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Newproduct from './newproduct';
 
+
+
+
+
+
+
+
 export default function GridCard() {
     const [cardData, setCardData] = useState([]);
 
@@ -105,7 +112,9 @@ export default function GridCard() {
                                 <CardMedia
                                     component="img"
                                     sx={{ width: 151, height: 245 }}
-                                    image={`../uploads/${card.productphoto}`}
+                                    //image={`../../public/media/${card.productphoto}`}
+                                    image={require(`../media/${card.productphoto}`).default}
+
                                     alt="Prod"
                                 />
                                 <Box></Box>

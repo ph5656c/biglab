@@ -22,35 +22,6 @@ export default function Product() {
         setopennew(false);
     }
 
-    // const handleSubmitnew = async (values, { setSubmitting }) => {
-    //     const { productphoto, ...rest } = values;
-
-    //     // 將 image 值轉換為 File 物件
-    //     const file = new File([productphoto], productphoto.name, { type: productphoto.type });
-
-    //     const reader = new FileReader();
-    //     reader.readAsDataURL(file);
-    //     reader.onload = async () => {
-    //         // 獲取讀取的數據 URL
-    //         const dataUrl = reader.result;
-    //         // 移除開頭的 "data:image/png;base64," 部分，得到實際的 Base64 編碼字符串
-    //         const base64EncodedImage = dataUrl.split(",")[1];
-    //         try {
-    //             // 將 Base64 編碼的圖片作為參數傳遞到 POST 請求中
-    //             await axios.post("http://127.0.0.1:3702/product", {
-    //                 productname: rest.productname,
-    //                 productphoto: base64EncodedImage,
-    //             });
-    //             console.log({productphoto: base64EncodedImage})
-    //             console.log("新增成功");
-    //         } catch (error) {
-    //             console.log(error);
-    //         } finally {
-    //             setSubmitting(false);
-    //         }
-    //         handleClosenew();
-    //     };
-    // };
 
     const handleSubmitnew = (values, { setSubmitting }) => {
         const formData = new FormData();
@@ -93,7 +64,7 @@ export default function Product() {
                         {({ handleSubmit, handleChange, values, errors, touched, setFieldValue }) => (
                             <Box component={Form} onSubmit={handleSubmit}>
                                 <Grid container spacing={3}>
-                                    <Grid item xs={12}>
+                                    <Grid xs={12}>
                                         <TextField
                                           
                                          InputLabelProps={{
@@ -111,7 +82,7 @@ export default function Product() {
                                     </Grid>
                                 </Grid>
                                 <Grid container spacing={3}>
-                                    <Grid item xs={12}>
+                                    <Grid xs={12}>
                                         <input
                                             id="productphoto"
                                             name="productphoto"
@@ -121,8 +92,8 @@ export default function Product() {
                                             onChange={(event) => {
                                                 setFieldValue('productphoto', event.currentTarget.files[0]);
                                             }}
-                                            error={touched.productphoto && Boolean(errors.productphoto)}
-                                            helperText={touched.productphoto && errors.productphoto}
+                                            
+                                            
                                         />
                                         {values.productphoto && (
                                             <div>
